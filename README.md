@@ -34,7 +34,7 @@ app
 2. next route are passed in order (matching http methods and route)
 
 # ctx
-ctx in passed to middleware as first parameters  
+ctx is passed to middleware as first parameters  
 you can populate in what ever you want,  
 it's a simple object with request and response in it at start.
 
