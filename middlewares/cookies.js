@@ -1,3 +1,10 @@
+/**
+ * parse cookies from request headers
+ * and place them in ctx.cookies
+ *
+ * @param ctx
+ * @returns {Promise<void>}
+ */
 module.exports = async function parseCookie(ctx) {
   const cookies = {};
   const rc = ctx.request.headers.cookie;

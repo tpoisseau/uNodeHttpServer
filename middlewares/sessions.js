@@ -2,6 +2,14 @@ const crypto = require('crypto');
 
 const SESSION_MAP = new Map();
 
+/**
+ * based on ctx.cookies['SID'] fetch session or create a new one
+ * renew Set-Cookie header in response
+ * place session in ctx.session
+ *
+ * @param ctx
+ * @returns {Promise<void>}
+ */
 module.exports = async function sessionInMemory(ctx) {
   if (!ctx.cookies['SID']) {
     ctx.cookies['SID'] = await new Promise((resolve, reject) => {
