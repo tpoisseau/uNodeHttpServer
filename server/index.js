@@ -1,4 +1,5 @@
 const http = require('http');
+const util = require('util');
 
 const defaultOnClientError = (err, socket) => socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 
@@ -36,7 +37,7 @@ module.exports = class App {
           console.error(e);
 
           if (!response.finished) {
-            response.end(e);
+            response.end(util.inspect(e));
           }
         })
     });
