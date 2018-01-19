@@ -4,11 +4,6 @@ micro express / koa like with async middleware support.
 
 prototype for node in-memory session.
 
-TODO:
-- transform string route in regex route
-- parse regex for url parameters
-- method (get, head, put, post...) for shortcut route() method
-
 # getting started
 ```bash
 npm install git+https://git@github.com/tpoisseau/uNodeHttpServer
@@ -27,6 +22,8 @@ app
   .use(ctx => console.log(ctx.request.url))
   .use(parseCookie)
   .use(sessionInMemory)
+  .get('/:test', ctx => ctx.response.end(JSON.stringify(ctx.params)))
+  .get('/:category/:page', ctx => ctx.response.end(JSON.stringify(ctx.params)))
   .route(ctx => ctx.response.end('Hello World !'))
   .applyOnClientError()
   .listen(3000);
