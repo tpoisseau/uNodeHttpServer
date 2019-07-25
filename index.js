@@ -30,7 +30,7 @@ class App {
             });
           } else {
             matchs.shift();
-            matchs.forEach((match, index) => params[index+1] = match);
+            matchs.forEach((match, index) => params[index + 1] = match);
           }
 
           ctx.params = params;
@@ -40,17 +40,16 @@ class App {
           if (response.finished) break;
         }
 
+        response.finished || response.end(JSON.stringify(lastResult));
+
         return ctx;
       };
 
-      middlewareOrchestrator()
-        .catch(e => {
-          console.error(e);
+      middlewareOrchestrator().catch(e => {
+        console.error(e);
 
-          if (!response.finished) {
-            response.end(util.inspect(e));
-          }
-        })
+        response.finished || response.end(util.inspect(e));
+      })
     });
   }
 
