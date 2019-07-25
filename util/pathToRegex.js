@@ -2,21 +2,6 @@ function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
-/**
- * @typedef {object} pathToRegex~return
- * @property {string} regex - to pass in new Regex(regex, 'g') before use
- * @property {object} [keyToIndex]
- */
-
-/**
- * /prefix/:category/:page => {
- *  regex: /^\/prefix\/([^/]+)\/([^/]+)$/g,
- *  keyToIndex: {category: 1, page: 2}
- * }
- *
- * @param path
- * @returns {pathToRegex~return}
- */
 function pathToRegex(path) {
   const regexParam = /\:([^\/]+)/g;
   let regexParamMatch;
@@ -42,4 +27,4 @@ function pathToRegex(path) {
   }
 }
 
-module.exports = pathToRegex;
+export default pathToRegex;

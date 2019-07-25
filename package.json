@@ -1,0 +1,34 @@
+{
+  "name": "u-http-server",
+  "version": "1.0.0",
+  "description": "a micro framefork http server",
+  "type": "module",
+  "main": "index.js",
+  "engines" : {
+    "node" : ">=8.16.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^12.6.8"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpoisseau/uNodeHttpServer.git"
+  },
+  "keywords": [
+    "http",
+    "server",
+    "micro",
+    "express-like",
+    "koa-like"
+  ],
+  "author": "tpoisseau",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/tpoisseau/uNodeHttpServer/issues"
+  },
+  "homepage": "https://github.com/tpoisseau/uNodeHttpServer#readme"
+}

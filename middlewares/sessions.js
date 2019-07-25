@@ -1,23 +1,16 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
+import {promisify} from 'util';
+const randomBytes = promisify(crypto.randomBytes);
 
 const SESSION_MAP = new Map();
 
-/**
- * based on ctx.cookies['SID'] fetch session or create a new one
- * renew Set-Cookie header in response
- * place session in ctx.session
- *
- * @param ctx
- * @returns {Promise<void>}
- */
-module.exports = async function sessionInMemory(ctx) {
+export default async function sessionInMemory(ctx) {
+  if (!Reflect.has(ctx, 'cookie')) {
+    throw new Error('Please use cookies middleware, session middleware depend on it');
+  }
+
   if (!ctx.cookies['SID']) {
-    ctx.cookies['SID'] = await new Promise((resolve, reject) => {
-      crypto.randomBytes(48, (err, buffer) => {
-        if (err) return reject(err);
-        resolve(buffer.toString('hex').toUpperCase());
-      });
-    });
+    ctx.cookies['SID'] = await randomBytes(46).then(buffer => buffer.toString('hex').toUpperCase());
     SESSION_MAP.set(ctx.cookies['SID'], {});
   }
   ctx.response.setHeader('Set-Cookie', `SID=${ctx.cookies['SID']}; HttpOnly`);
