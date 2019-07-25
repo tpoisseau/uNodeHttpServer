@@ -5,7 +5,7 @@ import {Socket} from 'net';
 export interface Context {
     request: http.IncomingMessage;
     response: http.OutgoingMessage;
-    params: {[key: string]: string};
+    params: { [key: string]: string };
 
     /// use middleware cookies
     cookies?: object;
@@ -33,9 +33,16 @@ export interface ClientError extends Error {
 }
 
 export type ReturnPUse = [string[], PathToRegexReturn, Middleware];
-export type Route = string|RegExp|PathToRegexReturn;
-export type Method = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'PATCH' | 'DELETE' | 'ACL' | 'BIND' | 'CHECKOUT' | 'CONNECT' | 'COPY' | 'LINK' | 'LOCK' | 'M-SEARCH' | 'MERGE' | 'MKACTIVITY' | 'MKCALENDAR' | 'MKCOL' | 'MOVE' | 'NOTIFY' | 'OPTIONS' | 'PROPFIND' | 'PROPPATCH' | 'PURGE' | 'REBIND' | 'REPORT' | 'SEARCH' | 'SOURCE' | 'SUBSCRIBE' | 'TRACE' | 'UNBIND' | 'UNLINK' | 'UNLOCK' | 'UNSUBSCRIBE';
-export type Methods = Method|Method[];
+export type Route = string | RegExp | PathToRegexReturn;
+export type Method =
+    'GET' | 'POST' | 'HEAD' | 'PUT' | 'PATCH' | 'DELETE' |
+    'ACL' | 'BIND' | 'CHECKOUT' | 'CONNECT' | 'COPY' |
+    'LINK' | 'LOCK' | 'M-SEARCH' | 'MERGE' | 'MKACTIVITY' |
+    'MKCALENDAR' | 'MKCOL' | 'MOVE' | 'NOTIFY' | 'OPTIONS' |
+    'PROPFIND' | 'PROPPATCH' | 'PURGE' | 'REBIND' | 'REPORT' |
+    'SEARCH' | 'SOURCE' | 'SUBSCRIBE' | 'TRACE' | 'UNBIND' |
+    'UNLINK' | 'UNLOCK' | 'UNSUBSCRIBE';
+export type Methods = Method | Method[];
 
 /**
  * @example
