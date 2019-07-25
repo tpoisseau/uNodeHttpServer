@@ -6,7 +6,7 @@ prototype for node in-memory session.
 
 # getting started
 ```bash
-npm install 'git+https://github.com/tpoisseau/uNodeHttpServer.git#1.0.0'
+npm install 'git+https://github.com/tpoisseau/uNodeHttpServer.git#1.0.1'
 ```
 
 index.js
