@@ -15,6 +15,7 @@ class App {
     this._middlewares = [];
     this._routes = [];
     this._server = void 0;
+    this._isSecure = void 0;
 
     this._httpHandler = this._httpHandler.bind(this);
   }
@@ -29,6 +30,8 @@ class App {
       options.key = privateKey;
       options.cert = certificate;
     }
+  
+    this._isSecure = pkg === https || (pkg === http2 && http2Secure);
 
     this._server = pkg[pkg_method](options, this._httpHandler);
 
@@ -77,13 +80,29 @@ class App {
       response.finished || response.end(util.inspect(e));
     });
   }
-
-  async listen(port) {
-    return new Promise(resolve => this._server.listen(port, () => resolve(this)));
+  
+  async listen(port = void 0, host = void 0, backlog = void 0) {
+    return new Promise(resolve => {
+      const options = typeof port === 'object' ? port : {port, host, backlog};
+      const protocol = this._isSecure ? 'https' : 'http';
+      
+      this._server.on('listening', () => {
+        let {port, family, address} = this._server.address();
+        
+        if (family === 'IPv6') {
+          address = address === '::' ? '::1' : address;
+          address = `[${address}]`;
+        }
+        
+        resolve(`${protocol}://${address}:${port}/`)
+      });
+      
+      this._server.listen(options);
+    });
   }
 
   applyOnClientError(callback = defaultOnClientError) {
-    this._server.on('clientError', defaultOnClientError);
+    this._server.on('clientError', callback);
 
     return this;
   }

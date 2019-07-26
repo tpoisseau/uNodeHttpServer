@@ -26,7 +26,8 @@ app
 app.init({protocol: 'https'})
   .then(app => app.applyOnClientError())
   .then(app => app.listen(3000))
-  .then(app => console.log('server listening on https://localhost:3000/'));
+  .then(info => console.log('server listening on', info))
+  .catch(console.error);
 ```
 
 ## Breaking Changes
@@ -35,7 +36,7 @@ app.init({protocol: 'https'})
   Async is here for let you autogenerate self-signed certificate (via node `crypto` builtins)
 
 if you want use `autogenerate self-signed certificate` abilities, `openssl` should be installed and accessible in `$PATH`
-- `listen(port)` is now `async listen(port)` resolved when server is truly listening
+- `listen(port)` is now `async listen(port)` resolved when server is truly listening and return a string url of server
 
 # request/response lifecycle
 1. middleware are passed in order (matching http methods and route)  

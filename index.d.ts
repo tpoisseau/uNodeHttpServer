@@ -1,4 +1,4 @@
-import {Socket} from 'net';
+import {Socket, ListenOptions} from 'net';
 import * as http from 'http';
 import * as https from "https";
 import * as http2 from "http2";
@@ -144,7 +144,8 @@ declare namespace App {
 declare class App {
     private _middlewares: App.MiddlewareItem[];
     private _routes: App.MiddlewareItem[];
-    private _server: http.Server;
+    private _server?: http.Server;
+    private _isSecure?: boolean;
 
     /**
      * Init server asynchronously
@@ -154,7 +155,15 @@ declare class App {
      */
     public init(options: App.InitOptions): Promise<this>;
 
-    public listen(port: number): this;
+    /**
+     * @param port
+     * @param host
+     * @param backlog
+     *
+     * @return a string url of server
+     */
+    public listen(port?: number, host?: string, backlog?: number): Promise<string>;
+    public listen(options: ListenOptions): Promise<string>;
 
     /**
      * if no callback provided
