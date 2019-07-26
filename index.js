@@ -19,11 +19,11 @@ class App {
     this._httpHandler = this._httpHandler.bind(this);
   }
 
-  async init({protocol='http', ...options}) {
+  async init({protocol='http', selfSigned=false, http2Secure=true, ...options}) {
     const pkg = strategy[protocol] || strategy.http;
-    const pkg_method = pkg === http2 ? 'createSecureServer' : 'createServer';
+    const pkg_method = (pkg === http2 && http2Secure) ? 'createSecureServer' : 'createServer';
 
-    if (pkg !== http && (!options.key || !options.cert)) {
+    if (pkg !== http && selfSigned) {
       const [privateKey, certificate] = await generateKeyPair();
 
       options.key = privateKey;

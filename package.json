@@ -4,8 +4,8 @@
   "description": "a micro framefork http server",
   "type": "module",
   "main": "index.js",
-  "engines" : {
-    "node" : ">=8.16.0"
+  "engines": {
+    "node": ">=8.16.0"
   },
   "dependencies": {},
   "devDependencies": {

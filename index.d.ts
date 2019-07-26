@@ -1,9 +1,9 @@
-import {PathToRegexReturn} from "./util/pathToRegex";
-import * as http from 'http';
 import {Socket} from 'net';
-import {ServerOptions} from "http";
+import * as http from 'http';
 import * as https from "https";
 import * as http2 from "http2";
+
+import {PathToRegexReturn} from "./util/pathToRegex";
 
 export interface Context {
     request: http.IncomingMessage;
@@ -35,8 +35,38 @@ export interface ClientError extends Error {
     rawPacket: Buffer;
 }
 
+/**
+ * For complete available options :
+ *
+ * @see https://nodejs.org/api/http.html#http_http_createserver_options_requestlistener
+ * @see https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
+ * @see https://nodejs.org/api/http2.html#http2_http2_createserver_options_onrequesthandler
+ * @see https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler
+ */
 export interface InitOptions extends http.ServerOptions, https.ServerOptions, http2.ServerOptions {
-    protocol: 'http' | 'https' | 'http2';
+    /**
+     * The server protocol
+     * @default 'http'
+     * */
+    protocol?: 'http' | 'https' | 'http2';
+
+    /**
+     * Set to true if you want a self signed ssl certificate
+     * Generated for runtime.
+     *
+     * @default false
+     * */
+    selfSigned?: boolean;
+
+    /**
+     * If you use http2 protocol
+     * You should choose between a server with or without TLS layer
+     *
+     * Disable it is highly discouraged because majority of navigator disallow http2 without a secure layer
+     *
+     * @default true
+     * */
+    http2Secure?: boolean;
 }
 
 export type ReturnPUse = [string[], PathToRegexReturn, Middleware];
@@ -52,6 +82,38 @@ export type Method =
 export type Methods = Method | Method[];
 
 /**
+ * This class let you create http, https, http2 builtin node server
+ * With simplify api for middleware and routing.
+ *
+ * The api of this class is close to express or koa for easy adoption
+ * but all your routes or middlewares are handling in async await manner.
+ *
+ * instances of App have two separate stack, one for middlewares, the other for routes.
+ * `use()` place in middlewares stack
+ * `route()` and shortcut place in routes stack
+ *
+ * they both have same syntax and called in the same way
+ *
+ * # Lyfecycle of a request
+ *
+ * When a server recieve a request,
+ * midlewares stack and routes stack are merged (middlewares first, next routes) in order they were declared
+ *
+ * iterate on this merge
+ * if methods and route match, params are populated for route (/:categorie/:item => /cheese/camembert => {categorie: 'cheese', item: 'camenbert'})
+ * middleware will be called in async way : `lastResult = await middleware(ctx, lastResult);`
+ * When it terminate:
+ * if `response.finished` break loop
+ * else continue with next middleware in stack until no more middleware to handle.
+ *
+ * Next to last middleware, if not `response.finished` => `response.end(JSON.stringify(lastResult))`
+ * It's for avoiding server never respond to client (and keep open ressources for nothing)
+ *
+ * /!\ For avoiding race exceptions, be sure when your middleware end,
+ * it has not open some asynchronous things not awaited.
+ * If you need to use some async api working with callback, wrap it in a Promise, resolve (or reject) it in callback
+ * and await or return this Promise.
+ *
  * @example
  *
  * import App, {parseCookie, sessionInMemory} from 'u-http-server';
@@ -65,8 +127,11 @@ export type Methods = Method | Method[];
  *  .get('/:test', ctx => ctx.response.end(JSON.stringify(ctx.params)))
  *  .get('/:category/:page', ctx => ctx.response.end(JSON.stringify(ctx.params)))
  *  .route(ctx => ctx.response.end('Hello World !'))
- *  .applyOnClientError()
- *  .listen(3000);
+ *
+ * app.init({protocol: 'http2', selfSigned: true})
+ *  .then(app => app.applyOnClientError())
+ *  .then(app => app.listen(3000))
+ *  .then(app => console.log('server listening on https://localhost:3000/'));
  */
 export default class App {
     private _middlewares: MiddlewareItem[];
@@ -97,6 +162,8 @@ export default class App {
     private _use(methods: Methods, route: Route, middleware: Middleware): ReturnPUse;
 
     /**
+     * Transform into a MiddlewareItem and put it in _middlewares stack
+     *
      * @example
      *  app.use(middleware); // equiv to app.use(http.METHODS, /^\/.*$/, middleware);
      *  app.use(route, middleware); // equiv to app.use(methods, route, middleware);
@@ -107,6 +174,8 @@ export default class App {
     public use(methods: Methods, route: Route, middleware: Middleware): this;
 
     /**
+     * Transform into a MiddlewareItem and put it in _routes stack
+     *
      * @example
      *  app.route(middleware); // equiv to app.use(http.METHODS, /^\/.*$/, middleware);
      *  app.route(route, middleware); // equiv to app.use(http.METHODS, route, middleware);

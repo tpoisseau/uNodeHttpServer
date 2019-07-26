@@ -21,12 +21,12 @@ app
   .use(sessionInMemory)
   .get('/:test', ctx => ctx.response.end(JSON.stringify(ctx.params)))
   .get('/:category/:page', ctx => ctx.response.end(JSON.stringify(ctx.params)))
-  .route(ctx => ctx.response.end('Hello World !'))
+  .route(ctx => ctx.response.end('Hello World !'));
 
 app.init({protocol: 'https'})
   .then(app => app.applyOnClientError())
   .then(app => app.listen(3000))
-  .then(app => console.log('server listening on https://localhost:3000/'))
+  .then(app => console.log('server listening on https://localhost:3000/'));
 ```
 
 ## Breaking Changes
@@ -34,8 +34,7 @@ app.init({protocol: 'https'})
 - For supporting https ans http2, added a `async init(options)` method in `App` class.
   Async is here for let you autogenerate self-signed certificate (via node `crypto` builtins)
 
-if you want use `autogenerate self-signed certificate` abilities, Node.js `>=v10.12.0` is required
-else `>=8.16.0` but you will need to provide `options.cert` and `options.key`
+if you want use `autogenerate self-signed certificate` abilities, `openssl` should be installed and accessible in `$PATH`
 - `listen(port)` is now `async listen(port)` resolved when server is truly listening
 
 # request/response lifecycle
