@@ -1,6 +1,9 @@
 import {PathToRegexReturn} from "./util/pathToRegex";
 import * as http from 'http';
 import {Socket} from 'net';
+import {ServerOptions} from "http";
+import * as https from "https";
+import * as http2 from "http2";
 
 export interface Context {
     request: http.IncomingMessage;
@@ -30,6 +33,10 @@ export interface MiddlewareItem {
 export interface ClientError extends Error {
     bytesParsed: number;
     rawPacket: Buffer;
+}
+
+export interface InitOptions extends http.ServerOptions, https.ServerOptions, http2.ServerOptions {
+    protocol: 'http' | 'https' | 'http2';
 }
 
 export type ReturnPUse = [string[], PathToRegexReturn, Middleware];
@@ -65,6 +72,14 @@ export default class App {
     private _middlewares: MiddlewareItem[];
     private _routes: MiddlewareItem[];
     private _server: http.Server;
+
+    /**
+     * Init server asynchronously
+     * can auto generate self-signed ssl if https or http2
+     *
+     * @param options
+     */
+    public init(options: InitOptions): Promise<this>;
 
     public listen(port: number): this;
 
