@@ -2,8 +2,27 @@
   "name": "u-http-server",
   "version": "1.1.0",
   "description": "a micro framefork http server",
+  "author": "tpoisseau",
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/tpoisseau/uNodeHttpServer#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpoisseau/uNodeHttpServer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tpoisseau/uNodeHttpServer/issues"
+  },
   "type": "module",
   "main": "index.js",
+  "exports": {
+    "./util/pathToRegex": "./util/pathToRegex.js",
+    "./util/generateSelfSignedCertificate.js": "util/generateSelfSignedCertificate"
+  },
+  "scripts": {
+    "test:http": "node --experimental-modules tests/test-http.js",
+    "test:https": "node --experimental-modules tests/test-https.js",
+    "test:http2": "node --experimental-modules tests/test-http2.js"
+  },
   "engines": {
     "node": ">=8.16.0"
   },
@@ -11,26 +30,11 @@
   "devDependencies": {
     "@types/node": "^12.6.8"
   },
-  "scripts": {
-    "test:http": "node --experimental-modules tests/test-http.js",
-    "test:https": "node --experimental-modules tests/test-https.js",
-    "test:http2": "node --experimental-modules tests/test-http2.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tpoisseau/uNodeHttpServer.git"
-  },
   "keywords": [
     "http",
     "server",
     "micro",
     "express-like",
     "koa-like"
-  ],
-  "author": "tpoisseau",
-  "license": "UNLICENSED",
-  "bugs": {
-    "url": "https://github.com/tpoisseau/uNodeHttpServer/issues"
-  },
-  "homepage": "https://github.com/tpoisseau/uNodeHttpServer#readme"
+  ]
 }

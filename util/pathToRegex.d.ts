@@ -1,14 +1,14 @@
-export as namespace pathToRegex;
+declare namespace pathToRegex {
+    interface KeyToIndex {
+        [key: string]: number;
+    }
 
-export interface KeyToIndex {
-    [key: string]: number;
-}
-
-export interface PathToRegexReturn {
-    /// to pass in new Regex(regex, 'g') before use
-    regex: string;
-    /// map key string to integer index in matching
-    keyToIndex?: KeyToIndex;
+    interface Return {
+        /// to pass in new Regex(regex, 'g') before use
+        regex: string;
+        /// map key string to integer index in matching
+        keyToIndex?: KeyToIndex;
+    }
 }
 
 /**
@@ -18,6 +18,7 @@ export interface PathToRegexReturn {
  * }
  *
  * @param path
- * @returns {PathToRegexReturn}
+ * @returns {pathToRegex.Return}
  */
-export default function pathToRegex(path: string): PathToRegexReturn;
+declare function pathToRegex(path: string): pathToRegex.Return;
+export = pathToRegex;

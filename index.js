@@ -24,7 +24,7 @@ class App {
     const pkg_method = (pkg === http2 && http2Secure) ? 'createSecureServer' : 'createServer';
 
     if (pkg !== http && selfSigned) {
-      const [privateKey, certificate] = await generateKeyPair();
+      const {privateKey, certificate} = await generateKeyPair();
 
       options.key = privateKey;
       options.cert = certificate;
@@ -91,8 +91,8 @@ class App {
   static _use(methods, route, middleware) {
     // switch arguments for support signatures
     // _use(middleware: Middleware): ReturnPUse;
-    // _use(route: string|RegExp|PathToRegexReturn, middleware: Middleware): ReturnPUse;
-    // _use(methods: string|string[], route: string|RegExp|PathToRegexReturn, middleware: Middleware): ReturnPUse;
+    // _use(route: string|RegExp|Return, middleware: Middleware): ReturnPUse;
+    // _use(methods: string|string[], route: string|RegExp|Return, middleware: Middleware): ReturnPUse;
 
     if (typeof methods === 'function') {
       middleware = methods;

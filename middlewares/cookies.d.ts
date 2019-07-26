@@ -1,6 +1,7 @@
 import {Context} from "../index";
 
-export as namespace cookies;
+declare namespace parseCookie {
+}
 
 /**
  * parse cookies from request headers
@@ -8,4 +9,5 @@ export as namespace cookies;
  *
  * @param ctx
  */
-export default function parseCookie(ctx: Context): Promise<void>;
+declare function parseCookie(ctx: Context): Promise<void>;
+export = parseCookie;

@@ -3,83 +3,91 @@ import * as http from 'http';
 import * as https from "https";
 import * as http2 from "http2";
 
-import {PathToRegexReturn} from "./util/pathToRegex";
+import * as _cookies from './middlewares/cookies';
+import * as _session from './middlewares/session';
 
-export interface Context {
-    request: http.IncomingMessage;
-    response: http.OutgoingMessage;
-    params: { [key: string]: string };
+import * as pathToRegex from "./util/pathToRegex";
 
-    /// use middleware cookies
-    cookies?: object;
-    /// use middleware sessions
-    sessions?: object;
+declare namespace App {
+    export interface Context {
+        request: http.IncomingMessage;
+        response: http.OutgoingMessage;
+        params: { [key: string]: string };
 
-    /// provided by custom middlewares
-    [key: string]: any;
-}
+        /// use middleware cookies
+        cookies?: object;
+        /// use middleware sessions
+        sessions?: object;
 
-export type Middleware = (ctx, lastResult?: any) => Promise<any>
+        /// provided by custom middlewares
+        [key: string]: any;
+    }
 
-export interface MiddlewareItem {
-    methods: string[];
-    route: PathToRegexReturn;
-    middleware: Middleware;
-}
+    export type Middleware = (ctx, lastResult?: any) => Promise<any>
 
-/**
- * @see https://nodejs.org/api/http.html#http_event_clienterror
- */
-export interface ClientError extends Error {
-    bytesParsed: number;
-    rawPacket: Buffer;
-}
-
-/**
- * For complete available options :
- *
- * @see https://nodejs.org/api/http.html#http_http_createserver_options_requestlistener
- * @see https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
- * @see https://nodejs.org/api/http2.html#http2_http2_createserver_options_onrequesthandler
- * @see https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler
- */
-export interface InitOptions extends http.ServerOptions, https.ServerOptions, http2.ServerOptions {
-    /**
-     * The server protocol
-     * @default 'http'
-     * */
-    protocol?: 'http' | 'https' | 'http2';
+    export interface MiddlewareItem {
+        methods: string[];
+        route: pathToRegex.Return;
+        middleware: Middleware;
+    }
 
     /**
-     * Set to true if you want a self signed ssl certificate
-     * Generated for runtime.
-     *
-     * @default false
-     * */
-    selfSigned?: boolean;
+     * @see https://nodejs.org/api/http.html#http_event_clienterror
+     */
+    export interface ClientError extends Error {
+        bytesParsed: number;
+        rawPacket: Buffer;
+    }
 
     /**
-     * If you use http2 protocol
-     * You should choose between a server with or without TLS layer
+     * For complete available options :
      *
-     * Disable it is highly discouraged because majority of navigator disallow http2 without a secure layer
-     *
-     * @default true
-     * */
-    http2Secure?: boolean;
-}
+     * @see https://nodejs.org/api/http.html#http_http_createserver_options_requestlistener
+     * @see https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
+     * @see https://nodejs.org/api/http2.html#http2_http2_createserver_options_onrequesthandler
+     * @see https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler
+     */
+    export interface InitOptions extends http.ServerOptions, https.ServerOptions, http2.ServerOptions {
+        /**
+         * The server protocol
+         * @default 'http'
+         * */
+        protocol?: 'http' | 'https' | 'http2';
 
-export type ReturnPUse = [string[], PathToRegexReturn, Middleware];
-export type Route = string | RegExp | PathToRegexReturn;
-export type Method =
-    'GET' | 'POST' | 'HEAD' | 'PUT' | 'PATCH' | 'DELETE' |
-    'ACL' | 'BIND' | 'CHECKOUT' | 'CONNECT' | 'COPY' |
-    'LINK' | 'LOCK' | 'M-SEARCH' | 'MERGE' | 'MKACTIVITY' |
-    'MKCALENDAR' | 'MKCOL' | 'MOVE' | 'NOTIFY' | 'OPTIONS' |
-    'PROPFIND' | 'PROPPATCH' | 'PURGE' | 'REBIND' | 'REPORT' |
-    'SEARCH' | 'SOURCE' | 'SUBSCRIBE' | 'TRACE' | 'UNBIND' |
-    'UNLINK' | 'UNLOCK' | 'UNSUBSCRIBE';
-export type Methods = Method | Method[];
+        /**
+         * Set to true if you want a self signed ssl certificate
+         * Generated for runtime.
+         *
+         * @default false
+         * */
+        selfSigned?: boolean;
+
+        /**
+         * If you use http2 protocol
+         * You should choose between a server with or without TLS layer
+         *
+         * Disable it is highly discouraged because majority of navigator disallow http2 without a secure layer
+         *
+         * @default true
+         * */
+        http2Secure?: boolean;
+    }
+
+    export type ReturnPUse = [string[], pathToRegex.Return, Middleware];
+    export type Route = string | RegExp | pathToRegex.Return;
+    export type Method =
+        'GET' | 'POST' | 'HEAD' | 'PUT' | 'PATCH' | 'DELETE' |
+        'ACL' | 'BIND' | 'CHECKOUT' | 'CONNECT' | 'COPY' |
+        'LINK' | 'LOCK' | 'M-SEARCH' | 'MERGE' | 'MKACTIVITY' |
+        'MKCALENDAR' | 'MKCOL' | 'MOVE' | 'NOTIFY' | 'OPTIONS' |
+        'PROPFIND' | 'PROPPATCH' | 'PURGE' | 'REBIND' | 'REPORT' |
+        'SEARCH' | 'SOURCE' | 'SUBSCRIBE' | 'TRACE' | 'UNBIND' |
+        'UNLINK' | 'UNLOCK' | 'UNSUBSCRIBE';
+    export type Methods = Method | Method[];
+
+    export {_cookies as cookies};
+    export {_session as session};
+}
 
 /**
  * This class let you create http, https, http2 builtin node server
@@ -133,9 +141,9 @@ export type Methods = Method | Method[];
  *  .then(app => app.listen(3000))
  *  .then(app => console.log('server listening on https://localhost:3000/'));
  */
-export default class App {
-    private _middlewares: MiddlewareItem[];
-    private _routes: MiddlewareItem[];
+declare class App {
+    private _middlewares: App.MiddlewareItem[];
+    private _routes: App.MiddlewareItem[];
     private _server: http.Server;
 
     /**
@@ -144,7 +152,7 @@ export default class App {
      *
      * @param options
      */
-    public init(options: InitOptions): Promise<this>;
+    public init(options: App.InitOptions): Promise<this>;
 
     public listen(port: number): this;
 
@@ -155,11 +163,11 @@ export default class App {
      *
      * @param callback
      */
-    public applyOnClientError(callback?: (err: ClientError, socket: Socket) => void): this;
+    public applyOnClientError(callback?: (err: App.ClientError, socket: Socket) => void): this;
 
-    private _use(middleware: Middleware): ReturnPUse;
-    private _use(route: Route, middleware: Middleware): ReturnPUse;
-    private _use(methods: Methods, route: Route, middleware: Middleware): ReturnPUse;
+    private _use(middleware: App.Middleware): App.ReturnPUse;
+    private _use(route: App.Route, middleware: App.Middleware): App.ReturnPUse;
+    private _use(methods: App.Methods, route: App.Route, middleware: App.Middleware): App.ReturnPUse;
 
     /**
      * Transform into a MiddlewareItem and put it in _middlewares stack
@@ -169,9 +177,9 @@ export default class App {
      *  app.use(route, middleware); // equiv to app.use(methods, route, middleware);
      *  app.use(methods, route, middleware);
      */
-    public use(middleware: Middleware): this;
-    public use(route: Route, middleware: Middleware): this;
-    public use(methods: Methods, route: Route, middleware: Middleware): this;
+    public use(middleware: App.Middleware): this;
+    public use(route: App.Route, middleware: App.Middleware): this;
+    public use(methods: App.Methods, route: App.Route, middleware: App.Middleware): this;
 
     /**
      * Transform into a MiddlewareItem and put it in _routes stack
@@ -181,47 +189,49 @@ export default class App {
      *  app.route(route, middleware); // equiv to app.use(http.METHODS, route, middleware);
      *  app.route(methods, route, middleware);
      */
-    public route(middleware: Middleware): this;
-    public route(route: Route, middleware: Middleware): this;
-    public route(methods: Methods, route: Route, middleware: Middleware): this;
+    public route(middleware: App.Middleware): this;
+    public route(route: App.Route, middleware: App.Middleware): this;
+    public route(methods: App.Methods, route: App.Route, middleware: App.Middleware): this;
 
     /**
      * @example
      *  app.get(middleware); // equiv to app.get(/^\/.*$/, middleware);
      *  app.get(route, middleware); // equiv to app.route(['GET'], route, middleware)
      */
-    public get(middleware: Middleware): this;
-    public get(route: Route, middleware: Middleware): this;
+    public get(middleware: App.Middleware): this;
+    public get(route: App.Route, middleware: App.Middleware): this;
 
     /**
      * @example
      *  app.post(middleware); // equiv to app.post(/^\/.*$/, middleware);
      *  app.post(route, middleware); // equiv to app.route(['POST'], route, middleware)
      */
-    public post(middleware: Middleware): this;
-    public post(route: Route, middleware: Middleware): this;
+    public post(middleware: App.Middleware): this;
+    public post(route: App.Route, middleware: App.Middleware): this;
 
     /**
      * @example
      *  app.put(middleware); // equiv to app.put(/^\/.*$/, middleware);
      *  app.put(route, middleware); // equiv to app.route(['PUT'], route, middleware)
      */
-    public put(middleware: Middleware): this;
-    public put(route: Route, middleware: Middleware): this;
+    public put(middleware: App.Middleware): this;
+    public put(route: App.Route, middleware: App.Middleware): this;
 
     /**
      * @example
      *  app.patch(middleware); // equiv to app.patch(/^\/.*$/, middleware);
      *  app.patch(route, middleware); // equiv to app.route(['PATCH'], route, middleware)
      */
-    public patch(middleware: Middleware): this;
-    public patch(route: Route, middleware: Middleware): this;
+    public patch(middleware: App.Middleware): this;
+    public patch(route: App.Route, middleware: App.Middleware): this;
 
     /**
      * @example
      *  app.delete(middleware); // equiv to app.delete(/^\/.*$/, middleware);
      *  app.delete(route, middleware); // equiv to app.route(['DELETE'], route, middleware)
      */
-    public delete(middleware: Middleware): this;
-    public delete(route: Route, middleware: Middleware): this;
+    public delete(middleware: App.Middleware): this;
+    public delete(route: App.Route, middleware: App.Middleware): this;
 }
+
+export = App;
