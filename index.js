@@ -15,12 +15,13 @@ class App {
   #_routes = [];
   #_server;
   #_isSecure;
+  address;
   
   constructor() {
     this._httpHandler = this._httpHandler.bind(this);
   }
-
-  async init({protocol='http', selfSigned=false, http2Secure=true, ...options}) {
+  
+  async init({protocol = 'http', selfSigned = false, http2Secure = true, ...options} = {}) {
     const pkg = strategy[protocol] || strategy.http;
     const pkg_method = (pkg === http2 && http2Secure) ? 'createSecureServer' : 'createServer';
 
@@ -93,8 +94,10 @@ class App {
           address = address === '::' ? '::1' : address;
           address = `[${address}]`;
         }
-        
-        resolve(`${protocol}://${address}:${port}/`)
+  
+        this.address = `${protocol}://${address}:${port}/`;
+  
+        resolve(this.address);
       });
   
       this.#_server.listen(options);

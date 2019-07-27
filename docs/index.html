@@ -1,0 +1,235 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>u-http-server</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">u-http-server</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> u-http-server</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#unodehttpserver" id="unodehttpserver" style="color: inherit; text-decoration: none;">
+					<h1>uNodeHttpServer</h1>
+				</a>
+				<p>micro express / koa like with async middleware support.</p>
+				<p>prototype for node in-memory session.</p>
+				<a href="#getting-started" id="getting-started" style="color: inherit; text-decoration: none;">
+					<h1>getting started</h1>
+				</a>
+				<pre><code class="language-bash">npm install <span class="hljs-string">'git+https://github.com/tpoisseau/uNodeHttpServer.git#1.1.0'</span></code></pre>
+				<p>index.js</p>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> App, {parseCookie, sessionInMemory} <span class="hljs-keyword">from</span> <span class="hljs-string">'u-http-server'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> App();
+
+app
+  .use(<span class="hljs-function"><span class="hljs-params">ctx</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(ctx.request.url))
+  .use(parseCookie)
+  .use(sessionInMemory)
+  .get(<span class="hljs-string">'/:test'</span>, ctx =&gt; ctx.response.end(<span class="hljs-built_in">JSON</span>.stringify(ctx.params)))
+  .get(<span class="hljs-string">'/:category/:page'</span>, ctx =&gt; ctx.response.end(<span class="hljs-built_in">JSON</span>.stringify(ctx.params)))
+  .route(<span class="hljs-function"><span class="hljs-params">ctx</span> =&gt;</span> ctx.response.end(<span class="hljs-string">'Hello World !'</span>));
+
+app.init({<span class="hljs-attr">protocol</span>: <span class="hljs-string">'https'</span>})
+  .then(<span class="hljs-function"><span class="hljs-params">app</span> =&gt;</span> app.applyOnClientError())
+  .then(<span class="hljs-function"><span class="hljs-params">app</span> =&gt;</span> app.listen(<span class="hljs-number">3000</span>))
+  .then(<span class="hljs-function"><span class="hljs-params">info</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'server listening on'</span>, info))
+  .catch(<span class="hljs-built_in">console</span>.error);</code></pre>
+				<a href="#breaking-changes" id="breaking-changes" style="color: inherit; text-decoration: none;">
+					<h2>Breaking Changes</h2>
+				</a>
+				<a href="#from-101-to-110" id="from-101-to-110" style="color: inherit; text-decoration: none;">
+					<h3>From 1.0.1 to 1.1.0</h3>
+				</a>
+				<ul>
+					<li>node 12 is required. App class use private field</li>
+					<li>For supporting https ans http2, added a <code>async init(options)</code> method in <code>App</code> class.
+						Async is here for let you autogenerate self-signed certificate (via node <code>child_process.exec</code> for <code>openssl</code> )
+					if you want use <code>autogenerate self-signed certificate</code> abilities, <code>openssl</code> should be installed and accessible in <code>$PATH</code></li>
+					<li><code>listen(port)</code> is now <code>async listen(port)</code> resolved when server is truly listening and return a string url of server</li>
+				</ul>
+				<a href="#requestresponse-lifecycle" id="requestresponse-lifecycle" style="color: inherit; text-decoration: none;">
+					<h1>request/response lifecycle</h1>
+				</a>
+				<ol>
+					<li>middleware are passed in order (matching http methods and route)  </li>
+					<li>next route are passed in order (matching http methods and route)</li>
+				</ol>
+				<a href="#ctx" id="ctx" style="color: inherit; text-decoration: none;">
+					<h1>ctx</h1>
+				</a>
+				<p>ctx is passed to middleware as first parameters<br>you can populate in what ever you want,<br>it&#39;s a simple object with request and response in it at start.</p>
+				<p>you middleware recieve in second parameters the returns of last middleware (usefull if you want chain some of them without pollute ctx)</p>
+				<a href="#dts" id="dts" style="color: inherit; text-decoration: none;">
+					<h1>.d.ts</h1>
+				</a>
+				<p>Please read <a href="index.d.ts">index.d.ts</a> for complete api doc</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_index_d_.html">"index.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_middlewares_cookies_d_.html">"middlewares/cookies.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_middlewares_session_d_.html">"middlewares/session.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_node_modules__types_node_http_d_.html">"node_<wbr>modules/@types/node/http.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_node_modules__types_node_http2_d_.html">"node_<wbr>modules/@types/node/http2.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_node_modules__types_node_https_d_.html">"node_<wbr>modules/@types/node/https.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_node_modules__types_node_net_d_.html">"node_<wbr>modules/@types/node/net.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_node_modules__types_node_tls_d_.html">"node_<wbr>modules/@types/node/tls.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_util_generateselfsignedcertificate_d_.html">"util/generate<wbr>Self<wbr>Signed<wbr>Certificate.d"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_util_pathtoregex_d_.html">"util/path<wbr>ToRegex.d"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

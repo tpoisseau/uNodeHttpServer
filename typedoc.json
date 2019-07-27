@@ -1,0 +1,24 @@
+{
+  "mode": "modules",
+  "out": "docs",
+  "includeDeclarations": true,
+  "excludeExternals": true,
+  "categorizeByGroup": true,
+  "toc": [],
+  "src": [
+    "./index.d.ts",
+    "./util/",
+    "./middlewares/",
+    "./node_modules/@types/node/net.d.ts",
+    "./node_modules/@types/node/tls.d.ts",
+    "./node_modules/@types/node/http.d.ts",
+    "./node_modules/@types/node/https.d.ts",
+    "./node_modules/@types/node/http2.d.ts"
+  ],
+  "exclude": [
+    "./**/*.js",
+    "./node_modules/typedoc",
+    "./node_modules/typescript",
+    "./node_modules/@types/node/ts3.2/util.d.ts"
+  ]
+}
