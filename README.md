@@ -34,9 +34,8 @@ app.init({protocol: 'https'})
 ### From 1.0.1 to 1.1.0
 - node 12 is required. App class use private field
 - For supporting https ans http2, added a `async init(options)` method in `App` class.
-  Async is here for let you autogenerate self-signed certificate (via node `crypto` builtins)
-
-if you want use `autogenerate self-signed certificate` abilities, `openssl` should be installed and accessible in `$PATH`
+  Async is here for let you autogenerate self-signed certificate (via node `child_process.exec` for `openssl` )
+  if you want use `autogenerate self-signed certificate` abilities, `openssl` should be installed and accessible in `$PATH`
 - `listen(port)` is now `async listen(port)` resolved when server is truly listening and return a string url of server
 
 # request/response lifecycle
