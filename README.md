@@ -19,9 +19,9 @@ app
   .use(ctx => console.log(ctx.request.url))
   .use(parseCookie)
   .use(sessionInMemory)
-  .get('/:test', ctx => ctx.response.end(JSON.stringify(ctx.params)))
-  .get('/:category/:page', ctx => ctx.response.end(JSON.stringify(ctx.params)))
-  .route(ctx => ctx.response.end('Hello World !'));
+  .get('/:category/:page', ({params, session, cookies}) => ({params, session, cookies}))
+  .get('/:test', ({params, session, cookies}) => ({params, session, cookies}))
+  .route('/', ctx => 'Hello World !');
 
 app.init({protocol: 'https'})
   .then(app => app.applyOnClientError())
@@ -49,5 +49,7 @@ it's a simple object with request and response in it at start.
 
 you middleware recieve in second parameters the returns of last middleware (usefull if you want chain some of them without pollute ctx)
 
-# .d.ts
-Please read [index.d.ts](index.d.ts) for complete api doc
+# Complete API Documentation
+Please read [API-Doc](https://tpoisseau.github.io/uNodeHttpServer/)
+
+or directly [index.d.ts](https://github.com/tpoisseau/uNodeHttpServer/blob/master/index.d.ts) for complete api doc

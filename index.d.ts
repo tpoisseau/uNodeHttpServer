@@ -11,16 +11,16 @@ import * as pathToRegex from "./util/pathToRegex";
 declare namespace App {
     export interface Context {
         /**
-         * if init({protocol: 'http2'})
-         * then [[http2.Http2ServerRequest]]
-         * else [[http.IncomingMessage]]
+         * if `init({protocol: 'http2'})`
+         * then [[Http2ServerRequest]]
+         * else [[IncomingMessage]]
          */
         request: http.IncomingMessage | http2.Http2ServerRequest;
 
         /**
-         * if init({protocol: 'http2'})
-         * then [[http2.Http2ServerResponse]]
-         * else [[http.ServerResponse]]
+         * if `init({protocol: 'http2'})`
+         * then [[Http2ServerResponse]]
+         * else [[ServerResponse]]
          */
         response: http.ServerResponse | http2.Http2ServerResponse;
 
@@ -29,12 +29,13 @@ declare namespace App {
          *
          * @example
          * ```js
-         * app.get('/:username/:commentId', ({response, params}) => response.end(JSON.stringify(params)))
+         * app.get('/:username/:commentId', ({params}) => params))
          * ```
          *
+         * When you call it :
          * ```
-         * // HTTP GET /tpoisseau/1
-         * // {"username": "tpoisseau", "commentId": 1}
+         * HTTP GET /tpoisseau/1
+         * {"username": "tpoisseau", "commentId": 1}
          * ```
          */
         params: { [key: string]: string };
@@ -47,6 +48,16 @@ declare namespace App {
          * import {parseCookie} from 'u-http-server';
          *
          * app.use(app.parseCookie);
+         *
+         * app.get('/', ({cookies}) => cookies);
+         * ```
+         *
+         * When you call it :
+         * ```
+         * HTTP GET /
+         * {}
+         *
+         * // a json object with cookies info
          * ```
          */
         cookies?: object;
@@ -58,18 +69,42 @@ declare namespace App {
          * import {sessionInMemory} from 'u-http-server';
          *
          * app.use(app.sessionInMemory);
+         * app.use(ctx => ctx.session.lastVisitedUrl = app.address + ctx.request.url)
+         *
+         * app.get('/session-info', ({session}) => session);
+         * ```
+         *
+         * When you call it :
+         * ```
+         * HTTP GET /
+         * {"lastVisitedUrl": "http://localhost:3000/session-info"}
          * ```
          */
-        sessions?: object;
+        session?: object;
 
         /**
-         * provided by custom middlewares
+         * Provided by custom middlewares
+         *
+         * All middlewares (and routes) can edit the context, be carefull to not clash with other middlewares 😉
          */
         [key: string]: any;
     }
 
-    export type Middleware = (ctx, lastResult?: any) => Promise<any>
+    /**
+     * Your callback middleware will be called with ctx and lastResult.
+     *
+     * Will be `await` by the request handler and use the resolved result as `lastResult` for the next middleware call
+     */
+    export type Middleware = (ctx: Context, lastResult?: any) => Promise<any>
 
+    /**
+     * It's for internal use only
+     *
+     * `.use(` and `.route(` generate a [[MiddlewareItem]] and push it in appropriate stack.
+     *
+     * Request handler iterate on this stacks, use [[MiddlewareItem.methods]] and [[MiddlewareItem.route]]
+     * to check if request match. If it match call [[MiddlewareItem.middleware]]
+     */
     export interface MiddlewareItem {
         methods: string[];
         route: pathToRegex.Return;
@@ -91,6 +126,17 @@ declare namespace App {
      * - [[InitOptions.protocol]]
      * - [[InitOptions.selfSigned]]
      * - [[InitOptions.http2Secure]]
+     *
+     * Others options are shared between [[ServerOptions]] and [[SecureServerOptions]]
+     *
+     * If you need use your own ssl certificates :
+     * - [[InitOptions.key]] - your private key
+     * - [[InitOptions.cert]] - the certificate
+     *
+     * You can eventually need to :
+     * - [[InitOptions.ca]] - Certificate Authority
+     * - [[InitOptions.pfx]] - replace [[InitOptions.key]] and [[InitOptions.cert]].
+     * - [[InitOptions.passphrase]] - if your private key is with it
      *
      * @see https://nodejs.org/api/http.html#http_http_createserver_options_requestlistener
      * @see https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
@@ -123,8 +169,29 @@ declare namespace App {
         http2Secure?: boolean;
     }
 
+    /**
+     * It's for internal use only
+     *
+     * private `_use(` method support the overloading and normalyze it into the complete signature.
+     */
     export type ReturnPUse = [string[], pathToRegex.Return, Middleware];
+
+    /**
+     * A route can be either :
+     * - a string, will be normalized by [[pathToRegex]]
+     * - a RegExp, will be normalized to [[pathToRegex.Return]] format (but without [[pathToRegex.KeyToIndex]]).
+     *   So params in [[Context]] will be an object `number` indexed (start at `1` index)
+     * - or directly a [[pathToRegex.Return]]
+     *
+     * You are encouraged to use string [[Route]].
+     *
+     * `'/:category/:page/'` will provide you a params object with `categories` and `page` key in [[Context]]
+     */
     export type Route = string | RegExp | pathToRegex.Return;
+
+    /**
+     * All http methods supported by Node.js
+     */
     export type Method =
         'GET' | 'POST' | 'HEAD' | 'PUT' | 'PATCH' | 'DELETE' |
         'ACL' | 'BIND' | 'CHECKOUT' | 'CONNECT' | 'COPY' |
@@ -141,35 +208,38 @@ declare namespace App {
 
 /**
  * ```js
- * import App from 'u-http-server'; //toto
+ * import App from 'u-http-server';
  * ```
  *
  * This class let you create http, https, http2 builtin node server
- * With simplify api for middleware and routing.
+ * with simple api for middleware and routing.
  *
  * The api of this class is close to express or koa for easy adoption
  * but all your routes or middlewares are handling in async await manner.
  *
  * instances of App have two separate stack, one for middlewares, the other for routes.
- * `use()` place in middlewares stack
- * `route()` and shortcut place in routes stack
+ * - `use()` place in middlewares stack
+ * - `route()` and shortcut (`get()`, `post()`, etc.) place in routes stack
  *
- * they both have same syntax and called in the same way
+ * They both have same syntax and called in the same way
  *
  * # Lyfecycle of a request
  *
  * When a server recieve a request,
  * midlewares stack and routes stack are merged (middlewares first, next routes) in order they were declared
  *
- * iterate on this merge
- * if methods and route match, params are populated for route (/:categorie/:item => /cheese/camembert => {categorie: 'cheese', item: 'camenbert'})
- * middleware will be called in async way : `lastResult = await middleware(ctx, lastResult);`
- * When it terminate:
- * if `response.finished` break loop
- * else continue with next middleware in stack until no more middleware to handle.
+ * Iterate on this merge.
+ * If methods and route match:
+ * - params are populated for route (/:categorie/:item => /cheese/camembert => {categorie: 'cheese', item: 'camenbert'})
+ * - middleware will be called in async way : `lastResult = await middleware(ctx, lastResult);`
+ * - When it terminate:
+ *   - if `response.finished` break loop
+ *   - else continue with next middleware in stack until no more middleware to handle.
  *
- * Next to last middleware, if not `response.finished` => `response.end(JSON.stringify(lastResult))`
- * It's for avoiding server never respond to client (and keep open ressources for nothing)
+ * Next to last middleware, if not `response.finished`:
+ * `response.end(typeof lastResult === 'object' ? JSON.stringify(lastResult) : lastResult.toString());`
+ * It's for avoiding server never respond to client (and keep open ressources for nothing).
+ * And in your route, if you wan't return some data, you can. instead of calling yourself `response.end(data)` or `response.end(JSON.stringify(data))`
  *
  * /!\ For avoiding race exceptions, be sure when your middleware end,
  * it has not open some asynchronous things not awaited.
@@ -190,8 +260,8 @@ declare namespace App {
  *  .use(ctx => console.log(ctx.request.url))
  *  .use(parseCookie)
  *  .use(sessionInMemory)
- *  .get('/:test', ctx => ctx.response.end(JSON.stringify(ctx.params)))
  *  .get('/:category/:page', ctx => ctx.response.end(JSON.stringify(ctx.params)))
+ *  .get('/:test', ctx => ctx.response.end(JSON.stringify(ctx.params)))
  *  .route(ctx => ctx.response.end('Hello World !'))
  *
  * app.init({protocol: 'http2', selfSigned: true})
@@ -258,8 +328,10 @@ declare class App {
 
     /**
      * populate next to call `await app.listen()` with server url
+     *
+     * @readonly
      */
-    public address?: string;
+    public readonly address?: string;
 
     /**
      * Init server asynchronously

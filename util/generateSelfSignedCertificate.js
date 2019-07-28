@@ -27,7 +27,7 @@ async function generatePaths() {
 
 const subj = `/C=EN/ST=London/L=London/O=Global Security/OU=IT Department/CN=localhost`;
 
-export default async function generateKeyPair() {
+export default async function generateSelfSignedCertificate() {
   const [folder, paths] = await generatePaths();
   
   // generate privateKey, Certificate Signing Request, and certificate

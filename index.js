@@ -15,7 +15,11 @@ class App {
   #_routes = [];
   #_server;
   #_isSecure;
-  address;
+  #_address;
+  
+  get address() {
+    return this.#_address;
+  }
   
   constructor() {
     this._httpHandler = this._httpHandler.bind(this);
@@ -69,8 +73,8 @@ class App {
 
         if (response.finished) break;
       }
-
-      response.finished || response.end(JSON.stringify(lastResult));
+  
+      response.finished || response.end(typeof lastResult === 'object' ? JSON.stringify(lastResult) : lastResult.toString());
 
       return ctx;
     };
@@ -95,7 +99,7 @@ class App {
           address = `[${address}]`;
         }
   
-        this.address = `${protocol}://${address}:${port}/`;
+        this.#_address = `${protocol}://${address}:${port}/`;
   
         resolve(this.address);
       });

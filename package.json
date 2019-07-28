@@ -16,7 +16,7 @@
   "main": "index.js",
   "exports": {
     "./util/pathToRegex": "./util/pathToRegex.js",
-    "./util/generateSelfSignedCertificate.js": "util/generateSelfSignedCertificate"
+    "./util/generateSelfSignedCertificate": "util/generateSelfSignedCertificate.js"
   },
   "scripts": {
     "test:http": "node --experimental-modules tests/test-http.js",
