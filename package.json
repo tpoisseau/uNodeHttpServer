@@ -14,6 +14,11 @@
   },
   "type": "module",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./util/pathToRegex": "./util/pathToRegex.js",
+    "./util/generateSelfSignedCertificate": "util/generateSelfSignedCertificate.js"
+  },
   "scripts": {
     "test:http": "node --experimental-modules tests/test-http.js",
     "test:https": "node --experimental-modules tests/test-https.js",
